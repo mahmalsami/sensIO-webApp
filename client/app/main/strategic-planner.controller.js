@@ -35,16 +35,15 @@ angular.module('sensProdApp')
 
 
 
-		Morris.Donut({
-		  element: 'today-tendancy-chart',
-		  data: [
-		    {label: 'SensIO Stand A', value: 12},
-		    {label: 'SensIO Stand B', value: 30},
-		    {label: 'Other Stand', value: 5}
-		  ]
-		});
+    $http.get('/api/todaytendance').success(function(todayTendanceData) {
+			$scope.todayTendance = todayTendanceData;
 
+			Morris.Donut({
+			  element: 'today-tendancy-chart',
+			  data: $scope.todayTendance
+			});
 
+		});	
 
 
 
