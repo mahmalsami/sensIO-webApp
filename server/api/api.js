@@ -96,43 +96,57 @@ exports.awesomeThings = function(req, res) {
 
 
 exports.currentWeekTendancy = function(req, res) {
-  res.json([
-    { Day: 'Mon.', value: 0 },
-    { Day: 'Tue.', value: 0 },
-    { Day: 'Wed.', value: 0 },
-    { Day: 'Thur', value: 0 },
-    { Day: 'Frid.', value: 0 },
-    { Day: 'Sat.', value: 10 },
-    { Day: 'Sund.', value: 0 }
-  ]);
+
+	var db = require('../config/database').connect();
+
+	var now= new Date();
+
+	db.collection('nodes').find({'publicationDate':now.toISOString().substr(0,10)}).toArray(function(err, result) {
+	  res.json([
+	    { Day: 'Mon.', value: 0 },
+	    { Day: 'Tue.', value: 0 },
+	    { Day: 'Wed.', value: 0 },
+	    { Day: 'Thur', value: 0 },
+	    { Day: 'Frid.', value: 0 },
+	    { Day: 'Sat.', value: 10 },
+	    { Day: 'Sund.', value: result.length }
+	  ]);
+
+	 });
+
+
 };
 
 
 
 exports.globalTendance = function(req, res) {
-  res.json([
-    { y: 'June', a: 0,  b: 10 },
-    { y: 'July', a: 0,  b: 11 },
-    { y: 'July', a: 0,  b: 12 },
-    { y: 'Sept.', a: 0,  b: 14 },
-    { y: 'Oct.', a: 0,  b: 13 },
-    { y: 'Nov.', a: 0,  b: 10 },
-    { y: 'Dec.', a: 0, b: 11 },
-    { y: 'Janu.', a: 10, b: 12 }
-  ]);
+	
+	var db = require('../config/database').connect();
+	db.collection('nodes').find().toArray(function(err, result) {
+	  res.json([
+	    { y: 'June', a: 0,  b: 10 },
+	    { y: 'July', a: 0,  b: 11 },
+	    { y: 'July', a: 0,  b: 12 },
+	    { y: 'Sept.', a: 0,  b: 14 },
+	    { y: 'Oct.', a: 0,  b: 13 },
+	    { y: 'Nov.', a: 0,  b: 10 },
+	    { y: 'Dec.', a: 0, b: 11 },
+	    { y: 'Janu.', a: result.length, b: 12 }
+	  ]);
+  });
 };
 
 
 
 exports.currentNodeState = function(req, res) {
   res.json([
-    { Day: 'Mon', a: 0, b: 0 },
-    { Day: 'Tue', a: 0, b: 0 },
-    { Day: 'Wed', a: 0, b: 0 },
-    { Day: 'Thur', a: 0, b: 0 },
-    { Day: 'Frid', a: 0, b: 0 },
-    { Day: 'Sat', a: 1, b: 10 },
-    { Day: 'Sun', a: 0, b: 0 }
+    { Day: '8', a: 0, b: 0 },
+    { Day: '10', a: 0, b: 0 },
+    { Day: '12', a: 0, b: 0 },
+    { Day: '14', a: 0, b: 0 },
+    { Day: '16', a: 0, b: 0 },
+    { Day: '18', a: 1, b: 10 },
+    { Day: '20', a: 0, b: 0 }
   ]);
 };
 
@@ -141,11 +155,21 @@ exports.currentNodeState = function(req, res) {
 
 
 exports.todayTendance = function(req, res) {
-  res.json([
-    {label: 'SensIO Stand A', value: 12},
-    {label: 'SensIO Stand B', value: 30},
-    {label: 'Other Stand', value: 5}
-  ]);
+
+	var db = require('../config/database').connect();
+
+	db.collection('nodes').find({'nodeID':1}).toArray(function(err, result) {
+		var previousResult = result.length;
+
+		db.collection('nodes').find({'nodeID':2}).toArray(function(err, result) {
+		  res.json([
+		    {label: 'SensIO Stand A', value: previousResult},
+		    {label: 'SensIO Stand B', value: result.length}
+		  ]);
+		});
+
+	});
+
 };
 
 
@@ -158,6 +182,13 @@ exports.maintenanceState = function(req, res) {
 
 	var totalFleet=0;
 	var totalConnected=0;
+
+
+
+
+
+
+
 
 	db.collection('node-list').find().toArray(function(err, result) {
 
