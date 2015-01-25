@@ -6,7 +6,17 @@ var db = require('mongoskin').db('mongodb://barber-user:barber-pass00@ds027771.m
 
 	console.log("[database.js]");
 	return db;
-	
+
+//For MYSQL IMPLEMENTATION
+	// var mysql      = require('mysql');
+	// var connection = mysql.createConnection({
+	//   host     : 'localhost',
+	//   user     : 'me',
+	//   password : 'secret'
+	// });
+
+
+	// return connection.connect();
 }
 
 exports.connect=connect;

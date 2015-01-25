@@ -5,6 +5,17 @@ exports.savePacket = function(req, res) {
 
 	var db = require('../config/database').connect();
 	
+
+
+
+//Sample to test MYSQL
+// 	db.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
+//   if (err) throw err;
+
+//   console.log('The solution is: ', rows[0].solution);
+
+
+
 	var nodeID = parseInt(req.body.nodeID);
 	var sequenceNumber = parseInt(req.body.seq);
 	var delay = parseInt(req.body.dur);
