@@ -1,22 +1,41 @@
-from socket import * 
-import time, sys
+import commands
+from socket import *
+import time
+from sys import argv
 
-if len(sys.argv) < 2:
-	print "Usage: python tx.py sequenceNumber time"
-	sys.exit(0)
+TCP_PORT = 5006
+seqNb=argv[1]
+time=argv[2]
+ID = "2"
 
-IP_ADDR = "192.168.5.255"
-UDP_PORT = 5005
-seqNb=sys.argv[1]
-time=sys.argv[2]
-ID = "1"
+MESSAGE = ID + "&" + seqNb + "&" + time
 
-MESSAGE = ID + "&" + seqNb + "&" + time 
+req = "curl www.google.fr"
+status, result = commands.getstatusoutput(req)
+if status != 0:
+	sock = socket(AF_INET, SOCK_STREAM)
+	try:
+		fd = open("Neighbors.sensIO", "r")
+		neighborTable = fd.read()
+		fd.close()
+	except:
+		print "\nTx.py: Unable to open the file Neighbors.sensIO"
+		sys.exit(0)
 
-sock = socket(AF_INET, SOCK_DGRAM)
-sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-sock.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-sock.sendto(MESSAGE, (IP_ADDR, UDP_PORT))
-print "Sent on " + IP_ADDR + ":" + str(UDP_PORT) + " : " + MESSAGE
-sock.close()
-
+	neighborTableArray = neighborTable.split("\n")
+	connectedNeighbor = ""
+	for i in range(0, len(neighborTableArray)-1):
+		dataNeigh = neighborTableArray[i].split(";")
+		if dataNeigh[2] == "true":
+			connectedNeighbor = dataNeigh[1]
+			i = len(neighborTableArray)
+	if connectedNeighbor != "":
+		try:
+			sock.connect((connectedNeighbor, TCP_PORT))
+			sock.send(MESSAGE)
+			sock.close()
+			print "\nTx.py: Sent to " + connectedNeighbor + ": " + MESSAGE
+		except:
+			print "\nTx.py: Unable to connect to " + connectedNeighbor
+	else:
+		print "\nTx.py: no connected neighbor found"
