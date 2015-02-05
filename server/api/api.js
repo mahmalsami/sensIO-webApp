@@ -411,3 +411,152 @@ exports.maintenanceState = function(req, res) {
 	// });//end of find node-list
 
 };
+
+function getInformation(){
+	var mysql      = require('mysql');
+
+	var connection = mysql.createConnection({
+	  host     : 'eu-cdbr-azure-west-b.cloudapp.net',
+	  user     : 'b74b78de34cf65',
+	  password : '2896cbff',
+	  database : 'sensIO'
+	});
+
+	connection.connect();
+
+	//Inputs:
+	var nodeID = [1, 2];
+	var startDate = '01/02/2015';
+	var endDate = '10/02/2015';
+	var period = 1;
+	var info = 1;
+
+	var dayStartDate = parseInt(startDate.substr(0, startDate.indexOf('/')));
+	var tmp = startDate.substr(startDate.indexOf('/')+1);
+	var monthStartDate = parseInt(tmp.substr(0, tmp.indexOf('/')));
+	tmp = tmp.substr(tmp.indexOf('/')+1);
+	var yearStartDate = parseInt(tmp.substr(0));
+	var dayEndDate = parseInt(endDate.substr(0, endDate.indexOf('/')));
+	tmp = endDate.substr(endDate.indexOf('/')+1);
+	var monthEndDate = parseInt(tmp.substr(0, tmp.indexOf('/')));
+	tmp = tmp.substr(tmp.indexOf('/')+1);
+	var yearEndDate = parseInt(tmp.substr(0));
+
+	var nodeIDs;
+	var results = [];
+	for (var i = 0; i < nodeID.length; i++)
+	{
+		if (i == 0)
+			nodeIDs = nodeID[i];
+		nodeIDs += ' or nodeID='+nodeID[i];
+		results[i] = [];
+		results[i]['nodeID'] = nodeID[i];
+		if (period == 0)		
+			results[i]['nbEntries'] = 0;
+		else if (period == 1)
+		{
+			currentDay = dayStartDate;
+			currentMonth = monthStartDate;
+			currentYear = yearStartDate;
+			currentDate = currentDay.toString() + '/' + currentMonth.toString() + '/' + currentYear.toString();
+			endDateTmp = dayEndDate.toString() + '/' + monthEndDate.toString() + '/' + yearEndDate.toString();
+			console.log(currentDate + ' ' + endDateTmp);
+			results[i][currentDate] = 0;
+			while (currentDate != endDateTmp)
+			{
+				if ((currentDay == 31 && (currentMonth == 1 || currentMonth == 3 || currentMonth == 5 || currentMonth == 7 || currentMonth == 8 || currentMonth == 10 || currentMonth == 12)) || (currentDay == 30 && (currentMonth == 4 || currentMonth == 6 || currentMonth == 9 || currentMonth == 11)) || (currentDay == 28 && currentMonth == 2)) {
+					currentDay = 1;
+					currentMonth++;
+				}
+				else {			
+					currentDay++;
+				}
+				if (currentMonth == 13){
+					currentMonth = 1;
+					currentYear++;
+				}
+				currentDate = currentDay.toString() + '/' + currentMonth.toString() + '/' + currentYear.toString();
+				results[i][currentDate] = 0;
+			}
+		}
+		else if (period == 2)
+		{
+			currentMonth = monthStartDate;
+			currentYear = yearStartDate;
+			currentDate = currentMonth.toString() + '/' + currentYear.toString();
+			endDateTmp = monthEndDate.toString() + '/' + yearEndDate.toString();
+			console.log(currentDate + ' ' + endDateTmp);
+			results[i][currentDate] = 0;
+			while (currentDate != endDateTmp)
+			{
+				if (currentMonth == 12){
+					currentMonth = 1;
+					currentYear++;
+				}
+				else {
+					currentMonth++;
+				}
+				currentDate = currentMonth.toString() + '/' + currentYear.toString();
+				results[i][currentDate] = 0;
+			}
+		}
+		else if (period == 3)
+		{
+			currentYear = yearStartDate;			
+			currentDate = '/' + currentYear.toString();
+			endDateTmp = '/' + yearEndDate.toString();
+			console.log(currentDate + ' ' + endDateTmp);
+			results[i][currentDate] = 0;
+			while (currentDate != endDateTmp)
+			{
+				currentYear++;
+				currentDate = '/' + currentYear.toString();
+				results[i][currentDate] = 0;
+			}
+		}
+	}
+
+	var selectQuery = 'SELECT nodeID, date, duration FROM SENSINGDATA WHERE nodeID='+nodeIDs;
+	connection.query(selectQuery, function(err, rows, fields) {
+	  if (err) {
+	  	connection.end();
+	  	throw err;
+	  }
+	  else{
+		console.log(rows);
+		nbEntries = 0;
+		for (var i = 0; i < rows.length; i++){
+			var dayRow = parseInt(rows[i].date.substr(0, startDate.indexOf('/')));
+			var tmp = rows[i].date.substr(rows[i].date.indexOf('/')+1);
+			var monthRow = parseInt(tmp.substr(0, tmp.indexOf('/')));
+			tmp = tmp.substr(tmp.indexOf('/')+1);
+			var yearRow = parseInt(tmp.substr(0));
+
+			if (((yearStartDate < yearRow) ||
+			(yearStartDate == yearRow && monthStartDate < monthRow) ||
+			(yearStartDate == yearRow && monthStartDate == monthRow && dayStartDate <= dayRow)) &&
+			((yearEndDate < yearRow) ||
+			(yearEndDate == yearRow && monthEndDate > monthRow) ||
+			(yearEndDate == yearRow && monthEndDate == monthRow && dayEndDate >= dayRow))){
+				var key;
+				if (period == 0)				
+					key = 'nbEntries';
+				else if (period == 1)
+					key = dayRow.toString()+'/'+monthRow.toString()+'/'+yearRow.toString();
+				else if (period == 2)
+					key = monthRow.toString()+'/'+yearRow.toString();
+				else if (period == 3)
+					key = '/' + yearRow.toString();				
+
+				if (info == 0)
+					results[nodeID.indexOf(parseInt(rows[i].nodeID))][key]++;
+				else if (info == 1)
+					results[nodeID.indexOf(parseInt(rows[i].nodeID))][key] += rows[i].duration;
+			}
+		}
+		console.log(results);	  
+	}
+	});
+
+	connection.end();
+}
