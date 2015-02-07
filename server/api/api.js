@@ -415,6 +415,7 @@ exports.maintenanceState = function(req, res) {
 function getInformation(){
 	var mysql      = require('mysql');
 
+	//Connection to the database	
 	var connection = mysql.createConnection({
 	  host     : 'eu-cdbr-azure-west-b.cloudapp.net',
 	  user     : 'b74b78de34cf65',
@@ -424,13 +425,26 @@ function getInformation(){
 
 	connection.connect();
 
-	//Inputs:
+	//Inputs of the callback function
+	//nodeID: table containing the IDs of nodes which information (number of detection events, duration of the detections ...)
+	//must be extracted from the database
+	//startDate and endDate: only node informations which was registered between the start date and end date are extracted from the database
+	//they must be in the format dd/mm/yyyy
+	//period:
+	//	1: each node information between the start date and end date are added. For each node, the variable results  
+	//contains the total number of detection events and the total duration of the detection events.
+	//	2: the time interval between the start date and the end date is split into days. For each node,
+	//the variable results contains the total number of detection events and the total duration of the detection events per day.
+	//	3: the time interval between the start date and the end date is split into months. For each node,
+	//the variable results contains the total number of detection events and the total duration of the detection events per month.
+	//	4: the time interval between the start date and the end date is split into years. For each node,
+	//the variable results contains the total number of detection events and the total duration of the detection events per year.
 	var nodeID = [1, 2];
 	var startDate = '01/02/2015';
 	var endDate = '10/02/2015';
-	var period = 1;
-	var info = 1;
+	var period = 3;
 
+	//The day, month and year of the start date and end date are extracted and put in different variables	
 	var dayStartDate = parseInt(startDate.substr(0, startDate.indexOf('/')));
 	var tmp = startDate.substr(startDate.indexOf('/')+1);
 	var monthStartDate = parseInt(tmp.substr(0, tmp.indexOf('/')));
@@ -442,6 +456,37 @@ function getInformation(){
 	tmp = tmp.substr(tmp.indexOf('/')+1);
 	var yearEndDate = parseInt(tmp.substr(0));
 
+	//The variable results is formated according to the value of the variable period and
+	//the node information are initialized to 0 in the variable result.
+	//Hereafter are the formats of the variable results according to the value of the variable period
+	//
+	//Period = 0:
+	//[ [ nodeID: 1, total: [ nbDetectEvents: 0, durationOfDetectEvents: 0 ] ],
+  	//[ nodeID: 2, total: [ nbDetectEvents: 1, durationOfDetectEvents: 7500 ] ] 
+	//... ]
+	//
+	//Period = 1:
+	//[ [ nodeID: 1,
+    	//'1/2/2015': [ nbDetectEvents: 0, durationOfDetectEvents: 0 ],
+    	//'2/2/2015': [ nbDetectEvents: 0, durationOfDetectEvents: 0 ],
+    	//'3/2/2015': [ nbDetectEvents: 0, durationOfDetectEvents: 0 ],
+   	//... ],
+ 	//[ nodeID: 2,
+    	//'1/2/2015': [ nbDetectEvents: 0, durationOfDetectEvents: 0 ],
+    	//'2/2/2015': [ nbDetectEvents: 0, durationOfDetectEvents: 0 ],
+    	//'3/2/2015': [ nbDetectEvents: 0, durationOfDetectEvents: 0 ],
+   	//... ] ]
+	//
+	//Period = 2:
+	//[ [ nodeID: 1, '2/2015': [ nbDetectEvents: 2, durationOfDetectEvents: 10000 ] ],
+  	//[ nodeID: 2, '2/2015': [ nbDetectEvents: 1, durationOfDetectEvents: 7500 ] ] 
+	//...]
+	//
+	//Period = 3:
+	//[ [ nodeID: 1, '/2015': [ nbDetectEvents: 2, durationOfDetectEvents: 10000 ] ],
+  	//[ nodeID: 2, '/2015': [ nbDetectEvents: 1, durationOfDetectEvents: 7500 ] ] 
+	//...]
+
 	var nodeIDs;
 	var results = [];
 	for (var i = 0; i < nodeID.length; i++)
@@ -451,19 +496,22 @@ function getInformation(){
 		nodeIDs += ' or nodeID='+nodeID[i];
 		results[i] = [];
 		results[i]['nodeID'] = nodeID[i];
-		if (period == 0)		
-			results[i]['nbEntries'] = 0;
-		else if (period == 1)
-		{
+		if (period == 0){
+			results[i]['total'] = [];		
+			results[i]['total']['nbDetectEvents'] = 0;
+			results[i]['total']['durationOfDetectEvents'] = 0;
+		}
+		else if (period == 1){
 			currentDay = dayStartDate;
 			currentMonth = monthStartDate;
 			currentYear = yearStartDate;
 			currentDate = currentDay.toString() + '/' + currentMonth.toString() + '/' + currentYear.toString();
 			endDateTmp = dayEndDate.toString() + '/' + monthEndDate.toString() + '/' + yearEndDate.toString();
 			console.log(currentDate + ' ' + endDateTmp);
-			results[i][currentDate] = 0;
-			while (currentDate != endDateTmp)
-			{
+			results[i][currentDate] = [];
+			results[i][currentDate]['nbDetectEvents'] = 0;
+			results[i][currentDate]['durationOfDetectEvents'] = 0;
+			while (currentDate != endDateTmp){
 				if ((currentDay == 31 && (currentMonth == 1 || currentMonth == 3 || currentMonth == 5 || currentMonth == 7 || currentMonth == 8 || currentMonth == 10 || currentMonth == 12)) || (currentDay == 30 && (currentMonth == 4 || currentMonth == 6 || currentMonth == 9 || currentMonth == 11)) || (currentDay == 28 && currentMonth == 2)) {
 					currentDay = 1;
 					currentMonth++;
@@ -476,7 +524,9 @@ function getInformation(){
 					currentYear++;
 				}
 				currentDate = currentDay.toString() + '/' + currentMonth.toString() + '/' + currentYear.toString();
-				results[i][currentDate] = 0;
+				results[i][currentDate] = [];
+				results[i][currentDate]['nbDetectEvents'] = 0;
+				results[i][currentDate]['durationOfDetectEvents'] = 0;
 			}
 		}
 		else if (period == 2)
@@ -486,7 +536,9 @@ function getInformation(){
 			currentDate = currentMonth.toString() + '/' + currentYear.toString();
 			endDateTmp = monthEndDate.toString() + '/' + yearEndDate.toString();
 			console.log(currentDate + ' ' + endDateTmp);
-			results[i][currentDate] = 0;
+			results[i][currentDate] = [];
+			results[i][currentDate]['nbDetectEvents'] = 0;
+			results[i][currentDate]['durationOfDetectEvents'] = 0;
 			while (currentDate != endDateTmp)
 			{
 				if (currentMonth == 12){
@@ -497,7 +549,9 @@ function getInformation(){
 					currentMonth++;
 				}
 				currentDate = currentMonth.toString() + '/' + currentYear.toString();
-				results[i][currentDate] = 0;
+				results[i][currentDate] = [];
+				results[i][currentDate]['nbDetectEvents'] = 0;
+				results[i][currentDate]['durationOfDetectEvents'] = 0;
 			}
 		}
 		else if (period == 3)
@@ -506,16 +560,22 @@ function getInformation(){
 			currentDate = '/' + currentYear.toString();
 			endDateTmp = '/' + yearEndDate.toString();
 			console.log(currentDate + ' ' + endDateTmp);
-			results[i][currentDate] = 0;
+			results[i][currentDate] = [];
+			results[i][currentDate]['nbDetectEvents'] = 0;
+			results[i][currentDate]['durationOfDetectEvents'] = 0;
 			while (currentDate != endDateTmp)
 			{
 				currentYear++;
 				currentDate = '/' + currentYear.toString();
-				results[i][currentDate] = 0;
+				results[i][currentDate] = [];
+				results[i][currentDate]['nbDetectEvents'] = 0;
+				results[i][currentDate]['durationOfDetectEvents'] = 0;
 			}
 		}
 	}
 
+	//Node information are extracted from the database. For each row, the date is compared to the start date and end date.
+	//If the date is between the start date and end date, the information of the node which ID is nodeID are updated in the variable results.
 	var selectQuery = 'SELECT nodeID, date, duration FROM SENSINGDATA WHERE nodeID='+nodeIDs;
 	connection.query(selectQuery, function(err, rows, fields) {
 	  if (err) {
@@ -540,7 +600,7 @@ function getInformation(){
 			(yearEndDate == yearRow && monthEndDate == monthRow && dayEndDate >= dayRow))){
 				var key;
 				if (period == 0)				
-					key = 'nbEntries';
+					key = 'total';
 				else if (period == 1)
 					key = dayRow.toString()+'/'+monthRow.toString()+'/'+yearRow.toString();
 				else if (period == 2)
@@ -548,10 +608,8 @@ function getInformation(){
 				else if (period == 3)
 					key = '/' + yearRow.toString();				
 
-				if (info == 0)
-					results[nodeID.indexOf(parseInt(rows[i].nodeID))][key]++;
-				else if (info == 1)
-					results[nodeID.indexOf(parseInt(rows[i].nodeID))][key] += rows[i].duration;
+				results[nodeID.indexOf(parseInt(rows[i].nodeID))][key]['nbDetectEvents']++;
+				results[nodeID.indexOf(parseInt(rows[i].nodeID))][key]['durationOfDetectEvents'] += rows[i].duration;
 			}
 		}
 		console.log(results);	  
