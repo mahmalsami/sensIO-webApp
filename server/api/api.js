@@ -23,17 +23,17 @@ if(duration!=0){
 	var mysql      = require('mysql');
 
 	var connection = mysql.createConnection({
-	  host     : 'us-cdbr-azure-southcentral-e.cloudapp.net',
-	  user     : 'b81ebb2b0c105f',
-	  password : '1a1f8033',
-	  database : 'sensIO6AVa02ksnb'
+	  host     : 'eu-cdbr-azure-west-b.cloudapp.net',
+	  user     : 'b74b78de34cf65',
+	  password : '2896cbff',
+	  database : 'sensIO'
 	});
 
 	connection.connect();
 
 	//Sample to test MYSQL
 	//var selectQuery = '"SELECT COUNT(*) FROM SENSIO WHERE nodeID='+nodeID+' AND sequenceNumber='+sequenceNumber+'"';
-	var selectQuery = 'SELECT COUNT(*) FROM SENSIO WHERE nodeID='+nodeID+' AND sequenceNumber='+sequenceNumber;
+	var selectQuery = 'SELECT COUNT(*) FROM SENSINGDATA WHERE nodeID='+nodeID+' AND sequenceNumber='+sequenceNumber;
 	console.log(selectQuery);
 	var queryResult = 0;
 	connection.query(selectQuery, function(err, rows, fields) {
@@ -49,7 +49,7 @@ if(duration!=0){
 	//To be done later
 	console.log('query result '+queryResult);
 	if(!queryResult){
-		var insertQuery = 'INSERT INTO SENSIO VALUES('+nodeID+','+duration+','+publicationDate+','+hour+','+sequenceNumber+','+sourceId+')';
+		var insertQuery = 'INSERT INTO SENSINGDATA VALUES('+nodeID+','+duration+','+publicationDate+','+hour+','+sequenceNumber+','+sourceId+')';
 
 		connection.query(insertQuery.toString(), function(err, rows, fields) {
 		 if (err) {
