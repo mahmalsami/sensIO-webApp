@@ -10,7 +10,7 @@ ID = "2"
 
 MESSAGE = ID + "&" + seqNb + "&" + time
 
-req = "curl www.google.fr"
+req = "curl --data \"nodeID="+ID+"&seq="+seqNb+"&dur="+time+"&sourceId="+ID+"\" http://127.0.0.1:9000/api/savepacket"
 status, result = commands.getstatusoutput(req)
 if status != 0:
 	sock = socket(AF_INET, SOCK_STREAM)
