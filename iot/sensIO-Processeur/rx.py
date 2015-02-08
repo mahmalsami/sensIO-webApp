@@ -103,9 +103,10 @@ class RelayData(Thread):
 				data = conn.recv(1024)
 				if not data:
 					break
-				print "\nReceived from TCP socket (" + time.strftime('%H:%M:%S',time.localtime()) + ":"
+				print "\nReceived from TCP socket (" + time.strftime('%H:%M:%S',time.localtime()) + "):"
 				print data
-				req = "curl www.google.fr"
+				dataArray = data.split("&")
+				req = "curl --data \"nodeID="+dataArray[0]+"&seq="+dataArray[1]+"&dur="+dataArray[2]+"&sourceId="+ID+"\" http://192.168.1.15:9000/api/savepacket"
 				status, result = commands.getstatusoutput(req)
 
 IP_ADDR_BEACON = '192.168.5.255'

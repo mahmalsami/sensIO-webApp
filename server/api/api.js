@@ -13,7 +13,8 @@ exports.savePacket = function(req, res) {
 	var sourceId = parseInt(req.body.sourceId);
 
 	var now= new Date();
-	var publicationDate = now.toISOString().substr(0,10);
+	//var publicationDate = now.toISOString().substr(0,10);
+	var publicationDate = String(now.getDate()) + "/" + String((now.getMonth()+1)) + "/" + String(now.getFullYear());
 	var hour = parseInt(now.toISOString().substr(11,6));
 
 
@@ -49,7 +50,7 @@ if(duration!=0){
 	//To be done later
 	console.log('query result '+queryResult);
 	if(!queryResult){
-		var insertQuery = 'INSERT INTO SENSINGDATA VALUES('+nodeID+','+duration+','+publicationDate+','+hour+','+sequenceNumber+','+sourceId+')';
+		var insertQuery = 'INSERT INTO SENSINGDATA VALUES('+nodeID+','+duration+',"'+publicationDate+'",'+hour+','+sequenceNumber+','+sourceId+')';
 
 		connection.query(insertQuery.toString(), function(err, rows, fields) {
 		 if (err) {
@@ -156,15 +157,15 @@ var result = ['a','b'];
 
 	var mysql      = require('mysql');
 	var connection = mysql.createConnection({
-	  host     : 'us-cdbr-azure-southcentral-e.cloudapp.net',
-	  user     : 'b81ebb2b0c105f',
-	  password : '1a1f8033',
-	  database : 'sensIO6AVa02ksnb'
+	  host     : 'eu-cdbr-azure-west-b.cloudapp.net',
+	  user     : 'b74b78de34cf65',
+	  password : '2896cbff',
+	  database : 'sensIO'
 	});
 
 	connection.connect();
 
-	var insertQuery = 'SELECT SUM(duration) FROM SENSIO';
+	var insertQuery = 'SELECT SUM(duration) FROM SENSINGDATA';
 
 	connection.query(insertQuery.toString(), function(err, rows, fields) {
 	  if (err) {
@@ -201,15 +202,15 @@ exports.globalTendance = function(req, res) {
 
 	var mysql      = require('mysql');
 	var connection = mysql.createConnection({
-	  host     : 'us-cdbr-azure-southcentral-e.cloudapp.net',
-	  user     : 'b81ebb2b0c105f',
-	  password : '1a1f8033',
-	  database : 'sensIO6AVa02ksnb'
+	  host     : 'eu-cdbr-azure-west-b.cloudapp.net',
+	  user     : 'b74b78de34cf65',
+	  password : '2896cbff',
+	  database : 'sensIO'
 	});
 
 	connection.connect();
 	
-	var insertQuery = 'SELECT SUM(duration) FROM SENSIO';
+	var insertQuery = 'SELECT SUM(duration) FROM SENSINGDATA';
 
 	connection.query(insertQuery.toString(), function(err, rows, fields) {
 		if (err) {
@@ -238,15 +239,15 @@ exports.currentNodeState = function(req, res) {
 
 	var mysql      = require('mysql');
 	var connection = mysql.createConnection({
-	  host     : 'us-cdbr-azure-southcentral-e.cloudapp.net',
-	  user     : 'b81ebb2b0c105f',
-	  password : '1a1f8033',
-	  database : 'sensIO6AVa02ksnb'
+	  host     : 'eu-cdbr-azure-west-b.cloudapp.net',
+	  user     : 'b74b78de34cf65',
+	  password : '2896cbff',
+	  database : 'sensIO'
 	});
-	
+
 	connection.connect();
 
-	var insertQuery = 'SELECT nodeID,hour,SUM(duration) FROM SENSIO GROUP BY nodeID,hour';//WHERE nodeID=1 OR nodeID=2 GROUPBY nodeID,hour
+	var insertQuery = 'SELECT nodeID,hour,SUM(duration) FROM SENSINGDATA GROUP BY nodeID,hour';//WHERE nodeID=1 OR nodeID=2 GROUPBY nodeID,hour
 //var insertQuery = 'SELECT * FROM SENSIO';
 
 connection.query(insertQuery.toString(), function(err, rows, fields) {
@@ -313,15 +314,15 @@ exports.todayTendance = function(req, res) {
 
 	var mysql      = require('mysql');
 	var connection = mysql.createConnection({
-	  host     : 'us-cdbr-azure-southcentral-e.cloudapp.net',
-	  user     : 'b81ebb2b0c105f',
-	  password : '1a1f8033',
-	  database : 'sensIO6AVa02ksnb'
+	  host     : 'eu-cdbr-azure-west-b.cloudapp.net',
+	  user     : 'b74b78de34cf65',
+	  password : '2896cbff',
+	  database : 'sensIO'
 	});
 
 	connection.connect();
 
-	var insertQuery = 'SELECT SUM(duration),nodeID FROM SENSIO WHERE nodeID=1 OR nodeID=2';
+	var insertQuery = 'SELECT SUM(duration),nodeID FROM SENSINGDATA WHERE nodeID=1 OR nodeID=2';
 	// var db = require('../config/database').connect();
 	
 	connection.query(insertQuery.toString(), function(err, rows, fields) {
@@ -488,18 +489,18 @@ function getInformation(){
 	//...]
 
 	var nodeIDs;
-	var results = [];
+	var results = new Array();
 	for (var i = 0; i < nodeID.length; i++)
 	{
 		if (i == 0)
 			nodeIDs = nodeID[i];
 		nodeIDs += ' or nodeID='+nodeID[i];
-		results[i] = [];
-		results[i]['nodeID'] = nodeID[i];
+		results[i] = new Object();
+		results[i].nodeID = nodeID[i];
 		if (period == 0){
-			results[i]['total'] = [];		
-			results[i]['total']['nbDetectEvents'] = 0;
-			results[i]['total']['durationOfDetectEvents'] = 0;
+			results[i].total = new Object();		
+			results[i].total.nbDetectEvents = 0;
+			results[i].total.durationOfDetectEvents = 0;
 		}
 		else if (period == 1){
 			currentDay = dayStartDate;
@@ -508,9 +509,9 @@ function getInformation(){
 			currentDate = currentDay.toString() + '/' + currentMonth.toString() + '/' + currentYear.toString();
 			endDateTmp = dayEndDate.toString() + '/' + monthEndDate.toString() + '/' + yearEndDate.toString();
 			console.log(currentDate + ' ' + endDateTmp);
-			results[i][currentDate] = [];
-			results[i][currentDate]['nbDetectEvents'] = 0;
-			results[i][currentDate]['durationOfDetectEvents'] = 0;
+			results[i][currentDate] = new Object();
+			results[i][currentDate].nbDetectEvents = 0;
+			results[i][currentDate].durationOfDetectEvents = 0;
 			while (currentDate != endDateTmp){
 				if ((currentDay == 31 && (currentMonth == 1 || currentMonth == 3 || currentMonth == 5 || currentMonth == 7 || currentMonth == 8 || currentMonth == 10 || currentMonth == 12)) || (currentDay == 30 && (currentMonth == 4 || currentMonth == 6 || currentMonth == 9 || currentMonth == 11)) || (currentDay == 28 && currentMonth == 2)) {
 					currentDay = 1;
@@ -524,9 +525,9 @@ function getInformation(){
 					currentYear++;
 				}
 				currentDate = currentDay.toString() + '/' + currentMonth.toString() + '/' + currentYear.toString();
-				results[i][currentDate] = [];
-				results[i][currentDate]['nbDetectEvents'] = 0;
-				results[i][currentDate]['durationOfDetectEvents'] = 0;
+				results[i][currentDate] = new Object();
+				results[i][currentDate].nbDetectEvents = 0;
+				results[i][currentDate].durationOfDetectEvents = 0;
 			}
 		}
 		else if (period == 2)
@@ -536,9 +537,9 @@ function getInformation(){
 			currentDate = currentMonth.toString() + '/' + currentYear.toString();
 			endDateTmp = monthEndDate.toString() + '/' + yearEndDate.toString();
 			console.log(currentDate + ' ' + endDateTmp);
-			results[i][currentDate] = [];
-			results[i][currentDate]['nbDetectEvents'] = 0;
-			results[i][currentDate]['durationOfDetectEvents'] = 0;
+			results[i][currentDate] = new Object();
+			results[i][currentDate].nbDetectEvents = 0;
+			results[i][currentDate].durationOfDetectEvents = 0;
 			while (currentDate != endDateTmp)
 			{
 				if (currentMonth == 12){
@@ -549,9 +550,9 @@ function getInformation(){
 					currentMonth++;
 				}
 				currentDate = currentMonth.toString() + '/' + currentYear.toString();
-				results[i][currentDate] = [];
-				results[i][currentDate]['nbDetectEvents'] = 0;
-				results[i][currentDate]['durationOfDetectEvents'] = 0;
+				results[i][currentDate] = new Object();
+				results[i][currentDate].nbDetectEvents = 0;
+				results[i][currentDate].durationOfDetectEvents = 0;
 			}
 		}
 		else if (period == 3)
@@ -560,16 +561,16 @@ function getInformation(){
 			currentDate = '/' + currentYear.toString();
 			endDateTmp = '/' + yearEndDate.toString();
 			console.log(currentDate + ' ' + endDateTmp);
-			results[i][currentDate] = [];
-			results[i][currentDate]['nbDetectEvents'] = 0;
-			results[i][currentDate]['durationOfDetectEvents'] = 0;
+			results[i][currentDate] = new Object();
+			results[i][currentDate].nbDetectEvents = 0;
+			results[i][currentDate].durationOfDetectEvents = 0;
 			while (currentDate != endDateTmp)
 			{
 				currentYear++;
 				currentDate = '/' + currentYear.toString();
-				results[i][currentDate] = [];
-				results[i][currentDate]['nbDetectEvents'] = 0;
-				results[i][currentDate]['durationOfDetectEvents'] = 0;
+				results[i][currentDate] = new Object();
+				results[i][currentDate].nbDetectEvents = 0;
+				results[i][currentDate].durationOfDetectEvents = 0;
 			}
 		}
 	}
@@ -608,11 +609,14 @@ function getInformation(){
 				else if (period == 3)
 					key = '/' + yearRow.toString();				
 
-				results[nodeID.indexOf(parseInt(rows[i].nodeID))][key]['nbDetectEvents']++;
-				results[nodeID.indexOf(parseInt(rows[i].nodeID))][key]['durationOfDetectEvents'] += rows[i].duration;
+				(results[nodeID.indexOf(parseInt(rows[i].nodeID))][key].nbDetectEvents)++;
+				results[nodeID.indexOf(parseInt(rows[i].nodeID))][key].durationOfDetectEvents += rows[i].duration;
 			}
 		}
-		console.log(results);	  
+		console.log(results);
+		resultsInJson = JSON.stringify(results);
+		console.log(resultsInJson);
+		console.log(JSON.parse(resultsInJson));
 	}
 	});
 
