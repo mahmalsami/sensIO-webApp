@@ -413,7 +413,7 @@ exports.maintenanceState = function(req, res) {
 
 };
 
-function getInformation(){
+exports.getInformation = function(req, res) {
 	var mysql      = require('mysql');
 
 	//Connection to the database	
@@ -426,12 +426,23 @@ function getInformation(){
 
 	connection.connect();
 
-	//Inputs of the callback function
+		//Inputs of the callback function
 	//nodeID: table containing the IDs of nodes which information (number of detection events, duration of the detections ...)
 	//must be extracted from the database
+	var nodeID = [1, 2];
+
 	//startDate and endDate: only node informations which was registered between the start date and end date are extracted from the database
 	//they must be in the format dd/mm/yyyy
-	//period:
+	var startDate = '01/02/2015';
+	var endDate = '10/02/2015';
+
+	//period: [1..3]
+
+	//1 per days
+	//2 per month
+	//3 per year	
+	var period = req.params.period || 3;
+
 	//	1: each node information between the start date and end date are added. For each node, the variable results  
 	//contains the total number of detection events and the total duration of the detection events.
 	//	2: the time interval between the start date and the end date is split into days. For each node,
@@ -440,10 +451,20 @@ function getInformation(){
 	//the variable results contains the total number of detection events and the total duration of the detection events per month.
 	//	4: the time interval between the start date and the end date is split into years. For each node,
 	//the variable results contains the total number of detection events and the total duration of the detection events per year.
-	var nodeID = [1, 2];
-	var startDate = '01/02/2015';
-	var endDate = '10/02/2015';
-	var period = 3;
+
+
+
+
+	var currentDate;
+
+	var currentDay
+	var currentMonth
+	var currentYear;
+
+	var endDate;
+	var endDateTmp;
+
+	
 
 	//The day, month and year of the start date and end date are extracted and put in different variables	
 	var dayStartDate = parseInt(startDate.substr(0, startDate.indexOf('/')));
@@ -490,6 +511,7 @@ function getInformation(){
 
 	var nodeIDs;
 	var results = new Array();
+
 	for (var i = 0; i < nodeID.length; i++)
 	{
 		if (i == 0)
@@ -585,7 +607,7 @@ function getInformation(){
 	  }
 	  else{
 		console.log(rows);
-		nbEntries = 0;
+		var nbEntries = 0;
 		for (var i = 0; i < rows.length; i++){
 			var dayRow = parseInt(rows[i].date.substr(0, startDate.indexOf('/')));
 			var tmp = rows[i].date.substr(rows[i].date.indexOf('/')+1);
@@ -614,11 +636,15 @@ function getInformation(){
 			}
 		}
 		console.log(results);
-		resultsInJson = JSON.stringify(results);
+		var resultsInJson = JSON.stringify(results);
 		console.log(resultsInJson);
 		console.log(JSON.parse(resultsInJson));
+
+		res.status(201).json(results);
 	}
 	});
 
 	connection.end();
+
 }
+

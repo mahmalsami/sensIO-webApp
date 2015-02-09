@@ -22,6 +22,8 @@ module.exports = function(app) {
   app.post('/api/savepacket', api.savePacket);
 
 
+  app.get('/api/getinfo/:period', api.getInformation);
+
   // All undefined asset or api routes should return a 404
   app.route('/:url(api|auth|components|app|bower_components|assets)/*')
    .get(errors[404]);
