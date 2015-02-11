@@ -1,9 +1,11 @@
-<div ng-include="'components/navbar/navbar.html'"></div>
+<!-- <div ng-include="'components/navbar/navbar.html'"></div> -->
+<img class="img-responsive img-center ng-scope center-logo" src="assets/images/sensio.png" alt="">
 
-<div id="page-wrapper" style="min-height: 415px">
+<!-- <div id="page-wrapper" style="min-height: 415px"> -->
+<div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">Strategic Planner</h1>
+                    <!-- <h1 class="page-header">Strategic Planner</h1> -->
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
@@ -14,15 +16,11 @@
                 <div class="col-lg-8">
 
 
-<div class="panel panel-default">
-<div class="panel-heading">
-                            <i class="fa fa-bar-chart-o fa-fw"></i> Week's tendancy
+                        <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Average visiters interest time (seconds per person)
                             <div class="pull-right">
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-                                        Select another week
-                                        <span class="caret"></span>
-                                    </button>
                                     <ul class="dropdown-menu pull-right" role="menu">
                                         <li><a href="#">From 12/01/15 to 18/01/15</a>
                                         </li>
@@ -38,12 +36,8 @@
                             </div>
                         </div>
                             <div class="panel-body">
-                                <div id="morris-bar-chart" style="position: relative; -webkit-tap-highlight-color: rgba(0, 0, 0, 0)">
-                                </div>
-
-                                <div class="text-right">
-                                    <a href="#">View Details <i class="fa fa-arrow-circle-right"></i></a>
-                                </div>
+                                <canvas class="graph" id="morris-bar-chart" width="100" height="150">
+                                </canvas>
                             </div>
                         </div>
 
@@ -51,57 +45,58 @@
 
 
 
-
-<div class="panel panel-default">
-<div class="panel-heading">
-                            <i class="fa fa-bar-chart-o fa-fw"></i> Global attendance
-
-                        </div>
-
-
-
-                        <div class="panel-body">
-                                <div id="global-tendance-bar" style="position: relative; -webkit-tap-highlight-color: rgba(0, 0, 0, 0)">
-                                </div>
-
-                                <div class="text-right">
-                                    <a href="#">View Details <i class="fa fa-arrow-circle-right"></i></a>
+                        <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Interested visiters counting estimation (number of persons)
+                            <div class="pull-right">
+                                <div class="btn-group">
+                                    <ul class="dropdown-menu pull-right" role="menu">
+                                        <li><a href="#">From 12/01/15 to 18/01/15</a>
+                                        </li>
+                                        <li><a href="#">From 12/01/15 to 18/01/15</a>
+                                        </li>
+                                        <li><a href="#">Something else here</a>
+                                        </li>
+                                        <li class="divider"></li>
+                                        <li><a href="#">Separated link</a>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
-
-
-
+                        </div>
+                            <div class="panel-body">
+                                <canvas class="graph" id="morris-bar-chart-2" width="100" height="150">
+                                </canvas>
+                            </div>
                         </div>
 
 
-
-
-
-
-
-
-
-
-
-                    
-                    <!-- /.panel -->
-                    
 
                 </div>
-                <!-- /.col-lg-8 -->
+                
+
+
                 <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Today's interest tendancy
+                        </div>
+                        <div class="panel-body">
+                            <canvas class="graph" id="today-tendancy-chart" width="70" height="150">
+                            </canvas>
+                            
+                        </div>
+                    </div>
 
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <i class="fa fa-bar-chart-o fa-fw"></i> Today's tendancy
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Month's interest tendancy
                         </div>
                         <div class="panel-body">
-                            <div id="today-tendancy-chart">
-                            </div>
+                            <canvas class="graph" id="today-tendancy-chart-2" width="70" height="150">
+                            </canvas>
                             
-                            <a href="#" class="btn btn-default btn-block">View Details</a>
                         </div>
-                        <!-- /.panel-body -->
                     </div>
 
 
